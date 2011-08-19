@@ -16,6 +16,8 @@ STDIN = 0
 STDOUT = 1
 STDERR = 2
 
+NOT_SET = object()
+
 class BaseArg(object):
     def __init__(self, data):
         self.data = data
@@ -86,6 +88,7 @@ class Operation(object):
         self._pipe_to = None
         self._redirects = {}
         self._env = {}
+        self._background = False
 
     @_makes_clone
     def background(self):
@@ -232,6 +235,9 @@ class Operation(object):
         """
         s = []
 
+        if self._background:
+            s.append('nohup')
+            
         if self._env:
             s.append('/usr/bin/env')
             for k, v in self._env.iteritems():
@@ -239,6 +245,9 @@ class Operation(object):
 
         self._build_command(s)
         self._build_redirects(s)
+
+        if self._background:
+            s.append('&')
 
         return ' '.join(s)
 
@@ -332,27 +341,30 @@ class Command(Operation):
         s.append(self.name)
 
         for opt in self._listopts:
-            s.append(e(opt))
-
-        for name, opt in self._kwopts.iteritems():
-            if not name.startswith('-'):
-                if len(name) == 1:
-                    name = '-%s' % name
-                else:
-                    name = '--%s' % name
-                    
-            s.append(str(name))
-
-            if opt is True:
-                # Do nothing, assume they just wanted `--name`
-                pass
-            elif opt is False:
-                raise ValueError('Keyword options such as %r can not have False values' % name)
-            else:
+            if opt is not NOT_SET:
                 s.append(e(opt))
 
+        for name, opt in self._kwopts.iteritems():
+            if opt is not NOT_SET:
+                if not name.startswith('-'):
+                    if len(name) == 1:
+                        name = '-%s' % name
+                    else:
+                        name = '--%s' % name
+
+                s.append(str(name))
+
+                if opt is True:
+                    # Do nothing, assume they just wanted `--name`
+                    pass
+                elif opt is False:
+                    raise ValueError('Keyword options such as %r can not have False values' % name)
+                else:
+                    s.append(e(opt))
+
         for arg in self._args:
-            s.append(e(arg))
+            if arg is not NOT_SET:
+                s.append(e(arg))
 
     @_makes_clone
     def __call__(self, *args, **kwargs):
@@ -419,6 +431,8 @@ class OR(BaseConjunction):
     operator = '||'
 
 class Clom(object):
+    NOT_SET = NOT_SET
+    
     def __init__(self):
         self._commands = {}
 
