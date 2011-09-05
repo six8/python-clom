@@ -8,7 +8,7 @@ def main():
         version = '0.7',
         author='Mike Thornton',
         author_email='six8@devdetails.com',
-        url='http://clom.readthedocs.org/',
+        url='http://readthedocs.org/docs/clom/en/master/',
         download_url='http://github.com/six8/python-clom',
         keywords=['command line', 'fabric'],
         license='MIT',
@@ -26,7 +26,7 @@ def main():
             "Topic :: System :: System Shells",
             "Topic :: System :: Systems Administration",
         ],
-        long_description=open('README.rst').read(),
+        long_description=open('README').read(),
     )
 
 if __name__ == '__main__':
