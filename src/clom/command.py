@@ -5,7 +5,11 @@ try:
 except ImportError:
     # No decorator package available. Create a no-op "decorator".
     def decorator(f):
-        return f
+        def decorate(_func):
+            def inner(*args, **kwargs):
+                return f(_func, *args, **kwargs)
+            return inner
+        return decorate
 
 from clom import arg
 
