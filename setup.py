@@ -1,26 +1,32 @@
-from setuptools import setup, find_packages, Command
-
-class PyTest(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import sys,subprocess
-        errno = subprocess.call([sys.executable, 'tests/runtests.py'])
-        raise SystemExit(errno)
+from distutils.core import setup
 
 def main():
     setup(
         name = 'clom',
-        version = '0.7',
-        packages=find_packages('src'),
-        zip_safe=False,
-        install_requires = [],
-        tests_require = ['pytest'],
+        packages=['clom'],
         package_dir = {'':'src'},
-        cmdclass = {'test': PyTest},
+        version = '0.7',
+        author='Mike Thornton',
+        author_email='six8@devdetails.com',
+        url='http://clom.readthedocs.org/',
+        download_url='http://github.com/six8/python-clom',
+        keywords=['command line', 'fabric'],
+        license='MIT',
+        description='Command Line Object Mapper. A library for building POSIX command line arguments, commands, and parameters. Very useful for Fabric tasks.',
+        classifiers = [
+            "Programming Language :: Python",
+            "Development Status :: 3 - Alpha",
+            "Environment :: Console",
+            "Intended Audience :: Developers",
+            "Intended Audience :: System Administrators",
+            "Operating System :: POSIX",
+            "License :: OSI Approved :: MIT License",
+            "Natural Language :: English",
+            "Topic :: Software Development :: Libraries :: Python Modules",
+            "Topic :: System :: System Shells",
+            "Topic :: System :: Systems Administration",
+        ],
+        long_description=open('README.rst').read(),
     )
 
 if __name__ == '__main__':
