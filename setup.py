@@ -26,7 +26,7 @@ def main():
             "Topic :: System :: System Shells",
             "Topic :: System :: Systems Administration",
         ],
-        long_description=open('README').read(),
+        long_description=open('README.rst').read(),
     )
 
 if __name__ == '__main__':

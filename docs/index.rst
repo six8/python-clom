@@ -5,7 +5,7 @@ Python Clom
 About
 =====
 
-.. include:: ../README
+.. include:: ../README.rst
 
 
 API Documentation
