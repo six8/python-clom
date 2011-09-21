@@ -3,6 +3,7 @@ easier for command line interaction. It's particularly useful when used with `Fa
 
 - `Documentation <http://clom.rtfd.org>`_
 - `Clom on GitHub <http://github.com/six8/python-clom>`_
+- `Clom on Pypi <http://pypi.python.org/pypi/clom>`_
 
 Installation
 ------------
