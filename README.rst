@@ -14,35 +14,51 @@ Install with ``pip`` or ``easy_install``.
 
     pip install clom
 
-Usage
------
+Usage Examples
+--------------
 
 ::
 
 	>>> from clom import clom
 
-	>>> # Build a command
+Build a command
+
+::
+
 	>>> clom.echo("Don't test me")
 	"echo 'Don'\\''t test me'"
 
-	>>> # Augment with arguments
+Augment with arguments
+
+::
+
 	>>> clom.ls.with_opts('-a', '-t', l=True).with_args('~/')
 	'ls -a -t -l '~/''
 	>>> clom.curl('http://dev.host', X='POST', data='message=hello')
 	'curl -X POST --data message=hello http://dev.host'
 
-	>>> # Use sub commands
+
+Use sub commands
+
+::
+
 	>>> clom.git.checkout('mybranch')
 	'git checkout mybranch'
 
-	>>> # Execute with ease 
+Execute with ease 
+
+::
+
 	>>> clom.ls.shell.all()
 	['clom', 'clom.egg-info', 'docs', 'tests']
 
 	>>> clom.git.status.shell('.').first()
 	'# On branch master'
 
-	>>> # Iterate over results
+Iterate over results
+
+::
+
 	>>> for path in clom.ls.shell():
 	...     print path
 	... 
@@ -51,7 +67,10 @@ Usage
 	docs
 	tests
 
-	# Handle errors
+Handle errors
+
+::
+
 	>>> clom.vagrant.up.shell()
 	Traceback (most recent call last):
 	  File "<console>", line 1, in <module>
@@ -60,7 +79,10 @@ Usage
 	CommandError: Error while executing "vagrant up" (3):
 	No Vagrant environment detected. Run `vagrant init` to set one up.
 
-	>>> # Group commands
+Group commands
+
+::
+
 	>>> from clom import AND, OR
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed'))
 	'( vagrant up || echo 'Vagrant up failed' )'
@@ -70,7 +92,10 @@ Usage
 	No Vagrant environment detected. Run `vagrant init` to set one up.
 	Vagrant up failed
 
-	>>> # Re-use commands
+Re-use commands
+
+::
+
 	>>> vbox = clom.VBoxManage
 	>>> vbox.list.runningvms
 	'VBoxManage list runningvms'
@@ -79,7 +104,10 @@ Usage
 	>>> vbox.list.vms.shell.all()
 	['"Windows Base" {949ec0af-92d0-4140-8a6c-36301ca6f695}']
 
-	>>> # Background tasks
+Background tasks
+
+::
+
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background()
 	'nohup VBoxHeadless --startvm 'Windows Base' &> /dev/null &'
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background().shell()
@@ -88,14 +116,20 @@ Usage
 	>>> vbox.list.runningvms.shell.all()
 	['"Windows Base" {949ec0af-92d0-4140-8a6c-36301ca6f695}']
 
-	# Works great with fabric
+Works great with fabric
+
+::
+
 	>>> from fabric.api import run, local
 	>>> local(clom.ls)
 	[localhost] local: ls
 	clom		clom.egg-info	docs		nohup.out	tests
 	''
 
-	# Can even create fab commands
+Can even create fab commands
+
+::
+
 	>>> clom.fab.test('doctest', 'unit').deploy('dev')
 	'fab test:doctest,unit deploy:dev'
 	>>> clom.fab.with_opts('-a', hosts='dev.host').deploy.with_args('dev','test')
