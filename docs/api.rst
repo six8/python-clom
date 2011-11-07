@@ -45,6 +45,21 @@ Commands
 .. autoclass:: clom.command.Operation
     :members:
    
+Shell
+-----
+
+.. autoclass:: clom.shell.Shell
+    :members:
+    :inherited-members:
+
+.. autoclass:: clom.shell.CommandError
+    :members:
+    :inherited-members:
+
+.. autoclass:: clom.shell.CommandResult
+    :members:
+    :inherited-members:
+
 
 Arguments
 ---------

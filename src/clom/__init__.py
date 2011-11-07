@@ -1,5 +1,6 @@
 from clom.arg import NOTSET, STDIN, STDOUT, STDERR
 from clom.command import Command, AND, OR
+from clom.fabric import FabCommand
 
 __all__ = [
     'clom',
@@ -18,7 +19,9 @@ class Clom(object):
     NOTSET = NOTSET
 
     def __init__(self):
-        self._commands = {}
+        self._commands = {
+            'fab' : FabCommand(self, 'fab')
+        }
 
     def __getattr__(self, name):
         """

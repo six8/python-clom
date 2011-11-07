@@ -1,6 +1,6 @@
-import functools
-
 try:
+    # Try to use decorator module as it gives better introspection of
+    # decorated me
     from decorator import decorator
 except ImportError:
     # No decorator package available. Create a no-op "decorator".
@@ -12,6 +12,7 @@ except ImportError:
         return decorate
 
 from clom import arg
+from clom.shell import Shell
 
 __all__ = [
     'Command',
@@ -39,6 +40,7 @@ class Operation(object):
         self._redirects = {}
         self._env = {}
         self._background = False
+        self._shell = None
 
     @_makes_clone
     def background(self):
@@ -50,10 +52,14 @@ class Operation(object):
         ::
 
             >>> clom.ls.background()
-            'nohup ls &'
+            'nohup ls &> /dev/null &'
 
         """
         self._background = True
+
+    @property
+    def is_background(self):
+        return self._background
 
     @_makes_clone
     def pipe_to(self, to_cmd):
@@ -244,7 +250,7 @@ class Operation(object):
         self._build_redirects(s)
 
         if self._background:
-            s.append('&')
+            s.append('&> /dev/null &')
 
         return ' '.join(s)
 
@@ -282,7 +288,7 @@ class Operation(object):
         if isinstance(other, basestring):
             return other == str(self)
         else:
-            return other == self
+            return super(self.__class__, self).__eq__(other)
 
     @_makes_clone
     def with_env(self, **kwargs):
@@ -292,6 +298,23 @@ class Operation(object):
         :param kwargs: dict - Environmental variables to run command with
         """
         self._env.update(kwargs)
+
+    @property
+    def shell(self):
+        """
+        Returns a `Shell` that will allow you to execute commands on the
+        shell.
+        """
+        if not self._shell:
+            self._shell = Shell(self)
+        return self._shell
+
+    def as_string(self):
+        """
+        :returns: str - Command suitable to pass to the command line
+        """
+        return str(self)
+
 
 class Command(Operation):
     """
@@ -311,7 +334,7 @@ class Command(Operation):
 
         self.name = name
 
-        self._clom = clom
+        self._clom = clom        
 
         # Parent command
         self._parent = parent
@@ -360,7 +383,7 @@ class Command(Operation):
         ::
 
             >>> clom.echo("don't test me")
-            'echo \'don\'\\'\'t test me\''
+            'echo \'don\'\\\'\'t test me\''
 
         """
         self._args.extend(args)
@@ -372,8 +395,8 @@ class Command(Operation):
 
         ::
 
-            >>> clom.fab.push
-            'fab push'
+            >>> clom.git.status
+            'git status'
 
         """
         parent = self._clone()
@@ -387,8 +410,8 @@ class Command(Operation):
 
         ::
 
-            >>> clom.fab['push']
-            'fab push'
+            >>> clom.git['status']
+            'git status'
 
         """
         return self.__getattr__(name)
@@ -402,7 +425,7 @@ class Command(Operation):
         if self._parent:
             s.append(str(self._parent))
 
-        s.append(self.name)
+        self._build_action(s)
 
         for opt in self._listopts:
             if opt is not arg.NOTSET:
@@ -426,9 +449,15 @@ class Command(Operation):
                 else:
                     s.append(e(opt))
 
+        self._build_args(s)
+
+    def _build_action(self, s):
+        s.append(self._escape_arg(self.name))
+
+    def _build_args(self, s):
         for val in self._args:
             if val is not arg.NOTSET:
-                s.append(e(val))
+                s.append(self._escape_arg(val))
 
     @_makes_clone
     def __call__(self, *args, **kwargs):
@@ -440,6 +469,17 @@ class Command(Operation):
         self._kwopts.update(kwargs)
         self._args.extend(args)
         return self
+
+    def as_string(self, *args, **kwargs):
+        """
+        Shortcut for `command.with_opts(**kwargs).with_args(*args)`
+
+        :returns: str - Command suitable to pass to the command line
+        """
+        c = self._clone()
+        c._kwopts.update(kwargs)
+        c._args.extend(args)
+        return str(c)
 
     @_makes_clone
     def from_file(self, filename):

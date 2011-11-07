@@ -24,3 +24,20 @@ def test_clom():
     assert 'grep 2> test.txt' == clom.grep.output_to_file('test.txt', STDERR)
     assert 'grep > /dev/null' == clom.grep.hide_output()
     assert 'grep 2> /dev/null' == clom.grep.hide_output(STDERR)
+
+def test_shell():
+    assert 'foo' == clom.echo.shell('foo')
+    assert 'foo' == clom.echo.shell.first('foo')
+
+    r = clom.echo.shell('')
+    assert 0 == r.return_code
+    assert r.return_code == r.code    
+    assert str(r) == r.stdout
+
+    for i, line in enumerate(clom.echo.shell('a\nb\nc\n')):
+        if i == 0:
+            assert line == 'a'
+        elif i == 1:
+            assert line == 'b'
+        else:
+            assert line == 'c'
