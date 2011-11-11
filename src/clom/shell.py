@@ -1,5 +1,8 @@
 import subprocess
 import time
+import logging
+
+log = logging.getLogger(__name__)
 
 __all__ = [
     'Shell',
@@ -161,6 +164,7 @@ class Shell(object):
             return self.execute(*args, **kwargs)
 
         cmd = self._command.as_string(*args, **kwargs)
+        log.info('Executing command: %s' % cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (stdout, stderr) = p.communicate()
@@ -234,6 +238,7 @@ class Shell(object):
         :returns: CommandResult
         """
         cmd = self._command.as_string(*args, **kwargs)
+        log.info('Executing command (capture off): %s' % cmd)
 
         p = subprocess.Popen(cmd, shell=True, stdout=None, stderr=None)
         p.communicate()
