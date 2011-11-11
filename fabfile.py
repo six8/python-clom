@@ -17,4 +17,6 @@ def release():
 
 	print('Releasing %s...' % version)
 	local(clom.git.tag(version, a=True, m='Release %s' % version))
+	local(clom.git.push('origin', 'HEAD'))
+	local(clom.git.push('origin', version))
 	local(clom.python('setup.py', 'sdist', 'upload'))
