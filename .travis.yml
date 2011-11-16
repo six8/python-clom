@@ -6,4 +6,5 @@ before_script:
 env:
   - SKIP_COVERAGE=1 SKIP_INSTALL=1
 script:
-  - python src/tests/runtests.py -v --doctest-modules
+  - cd src
+  - python tests/runtests.py -v --doctest-modules
