@@ -3,8 +3,8 @@ rvm:
 before_script:
   - sudo pip install pytest
   - sudo pip install .
+  - sh -c 'cd src'
 env:
   - SKIP_COVERAGE=1 SKIP_INSTALL=1
 script:
-  - cd src
   - python tests/runtests.py -v --doctest-modules
