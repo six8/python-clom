@@ -18,7 +18,7 @@ def release(version=None):
         abort('There are uncommitted changes, commit or stash them before releasing')
 
     if confirm('Must pull from origin to continue, pull now?'):     
-        local(clom.git.pull('origin', 'master', 'develop'))
+        local(clom.git.pull('origin'))
     else:
         abort('Aborted by user.')
 
