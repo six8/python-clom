@@ -20,12 +20,12 @@ def release(version=None):
     if confirm('Must pull from origin to continue, pull now?'):     
         local(clom.git.pull('origin', 'master', 'develop'))
     else:
-        abort()
+        abort('Aborted by user.')
 
     if not version:
         version = open('VERSION.txt').read().strip()
         if not confirm('Do you want to release as version `{version}`?'.format(version=version), default=False):
-            abort()
+            abort('Aborted by user.')
 
     puts(green('Releasing %s...' % version))
     local(clom.git.flow.release.start(version))
