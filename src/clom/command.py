@@ -242,9 +242,9 @@ class Operation(object):
             s.append('nohup')
             
         if self._env:
-            s.append('/usr/bin/env')
+            s.append('env')
             for k, v in self._env.iteritems():
-                s.append('%s=%s' % (k, LiteralArg(v)))
+                s.append('%s=%s' % (k, arg.LiteralArg(v)))
 
         self._build_command(s)
         self._build_redirects(s)
