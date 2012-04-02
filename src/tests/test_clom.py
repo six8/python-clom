@@ -24,6 +24,7 @@ def test_clom():
     assert 'grep 2> test.txt' == clom.grep.output_to_file('test.txt', STDERR)
     assert 'grep > /dev/null' == clom.grep.hide_output()
     assert 'grep 2> /dev/null' == clom.grep.hide_output(STDERR)
+    assert 'env foo=true ls' == clom.ls.with_env(foo='true')
 
 def test_shell():
     assert 'foo' == clom.echo.shell('foo')
@@ -40,4 +41,4 @@ def test_shell():
         elif i == 1:
             assert line == 'b'
         else:
-            assert line == 'c'
+            assert line == 'c'    
