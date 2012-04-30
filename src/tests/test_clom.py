@@ -42,3 +42,20 @@ def test_shell():
             assert line == 'b'
         else:
             assert line == 'c'    
+
+def test_piping():
+    """
+    Verify that piping several commands together behaves as expected.
+    """
+    cmd_ls = clom.ls.with_opts('-lah')
+    cmd_ls._env = {}
+    cmd_echo = clom.echo.with_opts("monkey", "gorilla")
+    cmd_grep = clom.grep.with_opts('monkey')
+
+    ls_pipe_echo = cmd_ls.pipe_to(cmd_echo)
+    ls_pipe_echo_expected = 'ls -lah | echo monkey gorilla' 
+    assert ls_pipe_echo_expected == str(ls_pipe_echo)
+
+    ls_pipe_echo_pipe_grep = ls_pipe_echo.pipe_to(cmd_grep)
+    ls_pipe_echo_pipe_grep_expected = ls_pipe_echo_expected + ' | grep monkey'
+    assert ls_pipe_echo_pipe_grep_expected == str(ls_pipe_echo_pipe_grep)
