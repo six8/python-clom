@@ -499,6 +499,9 @@ class Command(Operation):
         """
         self._redirects[arg.STDIN] = ('<', filename)
 
+    def new(self):
+        return Command(self._clom, self.name)
+
     def _clone(self):
         q = super(Command, self)._clone()
         q._args = self._args[:]

@@ -42,3 +42,20 @@ def test_shell():
             assert line == 'b'
         else:
             assert line == 'c'    
+
+def test_new_commands():
+    """
+    Verify that you can manually re-create a command instead of cloning it.
+    """
+    ls_cmd_a = clom.ls.new().with_opts('-r')
+    ls_cmd_b = clom.ls.new().with_opts('-lah')
+    assert str(ls_cmd_a) != str(ls_cmd_b)
+
+    ls_cmd_x = clom.ls.with_env(foo='monkey')
+    ls_cmd_y = clom.ls.new()
+    assert str(ls_cmd_x) != str(ls_cmd_y)
+
+    ls_cmd_m = clom.ls.with_env(bar='gorilla')
+    ls_cmd_n = clom.ls
+    assert str(ls_cmd_m) == str(ls_cmd_n)
+    
