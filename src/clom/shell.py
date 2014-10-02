@@ -103,7 +103,7 @@ class CommandResult(object):
             2
                
         """
-        s = _AttributeString(self.iter(strip=strip).next())
+        s = _AttributeString(next(self.iter(strip=strip)))
         s.return_code = s.code = self.return_code
         return s
 
