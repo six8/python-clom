@@ -126,4 +126,4 @@ Test are run using pytest::
 
 ::
 
-	python tests/runtests.py -v --doctest-modules
+	python tests/runtests.py -v
