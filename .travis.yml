@@ -1,9 +1,10 @@
-rvm:
-   - 1.9.3
-before_script:
-  - sudo pip install -r requirements.d/test.txt
-  - sudo pip install .  
-env:
-  - SKIP_COVERAGE=1 SKIP_INSTALL=1
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
+  - "pypy"
+install:
+  - pip install -r requirements.d/test.txt
 script:
-  - py.test
+  - python src/tests/runtests.py

@@ -122,7 +122,7 @@ Running Tests
 
 Test are run using pytest::
 
-	pip install pytest
+	pip install pytest fabfile
 
 ::
 
