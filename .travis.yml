@@ -1,7 +1,7 @@
 rvm:
    - 1.9.3
 before_script:
-  - sudo pip install pytest
+  - sudo pip install 'pytest==2.1.1'
   - sudo pip install .  
 env:
   - SKIP_COVERAGE=1 SKIP_INSTALL=1
