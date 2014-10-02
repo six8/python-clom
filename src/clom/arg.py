@@ -1,5 +1,7 @@
 import re
 
+from clom._compat import number_types
+
 __all__ = [
     'NOTSET',
     'STDIN',
@@ -59,7 +61,7 @@ class LiteralArg(BaseArg):
             'don'\''t interpolate this
             
         """
-        if isinstance(self.data, (int, long, float)):
+        if isinstance(self.data, number_types):
             return str(self.data)
         elif self.data is None or self.data == '':
             return "''"

@@ -31,7 +31,7 @@ Build a command::
 
 
 	>>> clom.echo("Don't test me")
-	"echo 'Don'\\''t test me'"
+	'echo 'Don'\''t test me''
 
 Augment with arguments::
 
@@ -48,31 +48,28 @@ Use sub commands::
 
 Execute with ease::
 
-	>>> clom.ls.shell.all()
-	['clom', 'clom.egg-info', 'docs', 'tests']
+	>>> clom.seq(5).shell.all()
+	['1', '2', '3', '4', '5']
 
-	>>> clom.git.status.shell('.').first()
-	'# On branch master'
+	>>> clom.seq.shell('5').first()
+	'1'
 
 Iterate over results::
 
-	>>> for path in clom.ls.shell():
-	...     print path
+	>>> for i in clom.seq(3).shell():
+	...	print(i)
 	... 
-	clom
-	clom.egg-info
-	docs
-	tests
+	1
+	2
+	3
 
 Handle errors::
 
-	>>> clom.vagrant.up.shell()
+	>>> clom.touch('/not/a/thing').shell()	    # doctest:+IGNORE_EXCEPTION_DETAIL
 	Traceback (most recent call last):
-	  File "<console>", line 1, in <module>
-	  File "/Users/mthornton/Dropbox/Projects/python-clom/src/clom/shell.py", line 164, in __call__
-	    raise CommandError(status, stdout, stderr, 'Error while executing "%s" (%s):\n%s' % (cmd, status, stderr or stdout))
-	CommandError: Error while executing "vagrant up" (3):
-	No Vagrant environment detected. Run `vagrant init` to set one up.
+	  ...
+	CommandError: Error while executing "touch /not/a/thing" (1):
+	touch: cannot touch ‘/not/a/thing’: No such file or directory
 
 Group commands::
 
@@ -80,20 +77,19 @@ Group commands::
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed'))
 	'( vagrant up || echo 'Vagrant up failed' )'
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed')).shell()
-	<clom.shell.CommandResult object at 0x10c4a85d0>
-	>>> print OR(clom.vagrant.up, clom.echo('Vagrant up failed')).shell()
-	No Vagrant environment detected. Run `vagrant init` to set one up.
+	<CommandResult return_code=0, stdout=17 bytes, stderr=... bytes>
+	>>> print(OR(clom.false, clom.echo('Vagrant up failed')).shell())
 	Vagrant up failed
 
 Re-use commands::
 
-	>>> vbox = clom.VBoxManage
-	>>> vbox.list.runningvms
-	'VBoxManage list runningvms'
-	>>> vbox.list.runningvms.shell.all()
-	['']
-	>>> vbox.list.vms.shell.all()
-	['"Windows Base" {949ec0af-92d0-4140-8a6c-36301ca6f695}']
+	>>> echo = clom.echo
+	>>> echo.one.two
+	'echo one two'
+	>>> echo.three.four.shell.all()
+	['three four']
+	>>> echo.foo.bar.shell.all()
+	['foo bar']
 
 Background tasks::
 
@@ -102,13 +98,13 @@ Background tasks::
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background().shell()
 	<CommandResult return_code=0, stdout=0 bytes, stderr=0 bytes>
 
-	>>> vbox.list.runningvms.shell.all()
+	>>> vbox.list.runningvms.shell.all()		# doctest: +SKIP
 	['"Windows Base" {949ec0af-92d0-4140-8a6c-36301ca6f695}']
 
 Works great with fabric::
 
-	>>> from fabric.api import run, local
-	>>> local(clom.ls)
+	>>> from fabric.api import run, local		# doctest: +SKIP
+	>>> local(clom.ls)				# doctest: +SKIP
 	[localhost] local: ls
 	clom		clom.egg-info	docs		nohup.out	tests
 	''
