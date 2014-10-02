@@ -7,7 +7,7 @@ from clom import clom, STDERR, STDIN, STDOUT, NOTSET
 
 def monkeypatch_DoctestModule():
     """
-    Ugly monkeypath to make sure clom is available to all doctests when ran with py.test
+    Ugly monkeypatch to make sure clom is available to all doctests when ran with py.test
     """
     old_runtest = doctest.DoctestModule.runtest
 

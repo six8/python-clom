@@ -36,7 +36,7 @@ class Operation(object):
     """
 
     def __init__(self):
-        self._pipe_to = None
+        self._pipe_to = []
         self._redirects = {}
         self._env = {}
         self._background = False
@@ -78,7 +78,7 @@ class Operation(object):
             'ls | grep'
 
         """
-        self._pipe_to = to_cmd
+        self._pipe_to.append(to_cmd)
 
     @_makes_clone
     def append_to_file(self, filename, fd=arg.STDOUT):
@@ -225,9 +225,9 @@ class Operation(object):
                 s.append('%s%s' % (fd, dir))
                 s.append(self._escape_arg(output))
 
-        if self._pipe_to:
+        for c in self._pipe_to:
             s.append('|')
-            s.append(str(self._pipe_to))
+            s.append(str(c))
 
     def _build_command(self, s):
         raise NotImplemented('Must implement _build_command in base class')
@@ -504,6 +504,7 @@ class Command(Operation):
         q._args = self._args[:]
         q._listopts = self._listopts[:]
         q._kwopts = self._kwopts.copy()
+        q._pipe_to = self._pipe_to[:]
 
         return q
 
