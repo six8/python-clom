@@ -1,9 +1,12 @@
-rvm:
-   - 1.9.3
-before_script:
-  - sudo pip install 'pytest==2.1.1'
-  - sudo pip install .  
-env:
-  - SKIP_COVERAGE=1 SKIP_INSTALL=1
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.4"
+  - "pypy"
+matrix:
+    fast_finish: true
+install:
+  - pip install -r requirements.d/test.txt
 script:
-  - sh -c 'cd src && python tests/runtests.py -v --doctest-modules'
+  - python src/tests/runtests.py
