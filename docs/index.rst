@@ -31,12 +31,12 @@ Build a command::
 
 
 	>>> clom.echo("Don't test me")
-	'echo 'Don'\''t test me''
+	"echo 'Don'\\''t test me'"
 
 Augment with arguments::
 
 	>>> clom.ls.with_opts('-a', '-t', l=True).with_args('~/')
-	'ls -a -t -l '~/''
+	"ls -a -t -l '~/'"
 	>>> clom.curl('http://dev.host', X='POST', data='message=hello')
 	'curl -X POST --data message=hello http://dev.host'
 
@@ -75,7 +75,7 @@ Group commands::
 
 	>>> from clom import AND, OR
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed'))
-	'( vagrant up || echo 'Vagrant up failed' )'
+	"( vagrant up || echo 'Vagrant up failed' )"
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed')).shell()
 	<CommandResult return_code=0, stdout=17 bytes, stderr=... bytes>
 	>>> print(OR(clom.false, clom.echo('Vagrant up failed')).shell())
@@ -94,7 +94,7 @@ Re-use commands::
 Background tasks::
 
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background()
-	'nohup VBoxHeadless --startvm 'Windows Base' &> /dev/null &'
+	"nohup VBoxHeadless --startvm 'Windows Base' &> /dev/null &"
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background().shell()
 	<CommandResult return_code=0, stdout=0 bytes, stderr=0 bytes>
 
