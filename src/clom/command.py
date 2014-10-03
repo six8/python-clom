@@ -281,6 +281,7 @@ class Operation(object):
         q = cls.__new__(cls)
         q.__dict__ = self.__dict__.copy()
         q._redirects = self._redirects.copy()
+        q._env = self._env.copy()
 
         return q
 

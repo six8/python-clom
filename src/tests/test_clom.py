@@ -59,3 +59,15 @@ def test_piping():
     ls_pipe_echo_pipe_grep = ls_pipe_echo.pipe_to(cmd_grep)
     ls_pipe_echo_pipe_grep_expected = ls_pipe_echo_expected + ' | grep monkey'
     assert ls_pipe_echo_pipe_grep_expected == str(ls_pipe_echo_pipe_grep)
+
+def test_new_commands():
+    """
+    Verify that you can manually re-create a command instead of cloning it.
+    """
+    ls_cmd_a = clom.ls.with_opts('-r')
+    ls_cmd_b = clom.ls.with_opts('-lah')
+    assert str(ls_cmd_a) != str(ls_cmd_b)
+
+    ls_cmd_x = clom.ls.with_env(foo='monkey')
+    ls_cmd_y = clom.ls
+    assert str(ls_cmd_x) != str(ls_cmd_y)
