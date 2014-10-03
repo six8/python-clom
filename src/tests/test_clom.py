@@ -33,15 +33,18 @@ def test_shell():
     r = clom.echo.shell('')
     assert 0 == r.return_code
     assert r.return_code == r.code    
-    assert str(r) == r.stdout
+    assert str(r) == ''
+    assert r.stdout == '\n'
 
-    for i, line in enumerate(clom.echo.shell('a\nb\nc\n')):
+    for i, line in enumerate(clom.echo.shell('a\nb\nc')):
         if i == 0:
             assert line == 'a'
         elif i == 1:
             assert line == 'b'
-        else:
+        elif i == 2:
             assert line == 'c'    
+        else:
+            raise AssertionError('Did not expect line %i: %r' % (i, line))
 
 def test_piping():
     """
@@ -71,3 +74,14 @@ def test_new_commands():
     ls_cmd_x = clom.ls.with_env(foo='monkey')
     ls_cmd_y = clom.ls
     assert str(ls_cmd_x) != str(ls_cmd_y)
+
+def test_sub_command():
+    shell_stuff = r""" $`'" \ """
+    echo = clom.echo(shell_stuff)
+    assert str(echo) == r"""echo ' $`'\''" \ '"""
+    assert echo.shell() == shell_stuff
+
+    echo_twice = clom.echo(echo, shell_stuff)
+    assert str(echo_twice) == r"""echo "$(echo ' $`'\''" \ ')" ' $`'\''" \ '"""
+
+    assert str(echo_twice.shell()) == shell_stuff + ' ' + shell_stuff

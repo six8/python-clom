@@ -71,7 +71,7 @@ Group commands::
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed'))
 	'( vagrant up || echo 'Vagrant up failed' )'
 	>>> OR(clom.vagrant.up, clom.echo('Vagrant up failed')).shell()
-	<CommandResult return_code=0, stdout=17 bytes, stderr=... bytes>
+	<CommandResult return_code=0, stdout=18 bytes, stderr=... bytes>
 	>>> print(OR(clom.false, clom.echo('Vagrant up failed')).shell())
 	Vagrant up failed
 
