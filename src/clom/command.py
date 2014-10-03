@@ -13,6 +13,7 @@ except ImportError:
 
 from clom import arg
 from clom.shell import Shell
+from clom._compat import string_types, integer_types, PY3
 
 __all__ = [
     'Command',
@@ -41,6 +42,10 @@ class Operation(object):
         self._env = {}
         self._background = False
         self._shell = None
+        if PY3:
+            self._encoding = 'UTF-8'
+        else:
+            self._encoding = None
 
     @_makes_clone
     def background(self):
@@ -175,7 +180,7 @@ class Operation(object):
             'echo test > test.txt'
 
         """
-        if isinstance(right, basestring):
+        if isinstance(right, string_types):
             return str(self) + right
         elif isinstance(right, Operation):
             # TODO
@@ -193,7 +198,7 @@ class Operation(object):
             'cat test.txt | echo'
 
         """
-        if isinstance(left, basestring):
+        if isinstance(left, string_types):
             return left + str(self)
         elif isinstance(left, Operation):
             # TODO
@@ -213,13 +218,13 @@ class Operation(object):
         """
         Adds any redirects to the command output.
         """
-        for fd, (dir, output)  in self._redirects.iteritems():
+        for fd, (dir, output)  in self._redirects.items():
             if dir in ('>', '>>') and fd == arg.STDOUT:
                 fd = ''
             elif dir in ('<', '<<') and fd == arg.STDIN:
                 fd = ''
 
-            if isinstance(output, (int, long)):
+            if isinstance(output, integer_types):
                 s.append('%s%s%d' % (fd, dir, output))
             else:
                 s.append('%s%s' % (fd, dir))
@@ -243,7 +248,7 @@ class Operation(object):
             
         if self._env:
             s.append('env')
-            for k, v in self._env.iteritems():
+            for k, v in self._env.items():
                 s.append('%s=%s' % (k, arg.LiteralArg(v)))
 
         self._build_command(s)
@@ -286,7 +291,7 @@ class Operation(object):
         return q
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, string_types):
             return other == str(self)
         else:
             return super(self.__class__, self).__eq__(other)
@@ -432,7 +437,7 @@ class Command(Operation):
             if opt is not arg.NOTSET:
                 s.append(e(opt))
 
-        for name, opt in self._kwopts.iteritems():
+        for name, opt in sorted(self._kwopts.items()):
             if opt is not arg.NOTSET:
                 if not name.startswith('-'):
                     if len(name) == 1:

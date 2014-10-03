@@ -1,2 +1,2 @@
 test:
-	python src/tests/runtests.py
+	PYTHONPATH=src py.test

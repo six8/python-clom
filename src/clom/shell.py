@@ -2,6 +2,8 @@ import subprocess
 import time
 import logging
 
+from clom._compat import string_types
+
 log = logging.getLogger(__name__)
 
 __all__ = [
@@ -103,7 +105,7 @@ class CommandResult(object):
             2
                
         """
-        s = _AttributeString(self.iter(strip=strip).next())
+        s = _AttributeString(next(self.iter(strip=strip)))
         s.return_code = s.code = self.return_code
         return s
 
@@ -133,7 +135,7 @@ class CommandResult(object):
         return list(self.iter(strip=strip))
 
     def __eq__(self, other):
-        if isinstance(other, basestring):
+        if isinstance(other, string_types):
             return other == str(self)
         else:
             return super(self.__class__, self).__eq__(other)
@@ -168,6 +170,9 @@ class Shell(object):
 
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (stdout, stderr) = p.communicate()
+        if self._command._encoding:
+            stdout = stdout.decode(self._command._encoding)
+            stderr = stderr.decode(self._command._encoding)
         status = p.returncode
 
         stdout = stdout.strip() if stdout else ''
