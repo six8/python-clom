@@ -122,8 +122,8 @@ Running Tests
 
 Test are run using pytest::
 
-	pip install pytest
+	pip install pytest fabfile
 
 ::
 
-	python tests/runtests.py -v --doctest-modules
+	python tests/runtests.py -v
