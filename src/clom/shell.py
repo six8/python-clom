@@ -39,7 +39,10 @@ class CommandResult(object):
         self._stderr = stderr
 
     def __str__(self):
-        return str(self._stdout)
+        if self._stdout.endswith('\n'):
+            return self._stdout[:-1]
+        else:
+            return self._stdout
 
     def __repr__(self):
         return '<CommandResult return_code=%s, stdout=%s bytes, stderr=%s bytes>' % (
@@ -67,7 +70,7 @@ class CommandResult(object):
         """
         Returns the command's stdout as a string.
         """
-        return str(self)
+        return self._stdout
         
     @property
     def stderr(self):
@@ -90,9 +93,7 @@ class CommandResult(object):
 
         :param strip: bool - Strip whitespace for each line
         """
-        return (
-            r.strip() for r in str(self).split('\n')
-        )
+        return iter(self.all(strip))
 
     def first(self, strip=True):
         """
@@ -105,7 +106,12 @@ class CommandResult(object):
             2
                
         """
-        s = _AttributeString(next(self.iter(strip=strip)))
+        try:
+            s = next(self.iter(strip=strip))
+        except StopIteration:
+            s = ''
+
+        s = _AttributeString(s)
         s.return_code = s.code = self.return_code
         return s
 
@@ -132,7 +138,10 @@ class CommandResult(object):
         """
         Get all lines of the results as a list.
         """
-        return list(self.iter(strip=strip))
+        if strip:
+            return [r.strip() for r in self.stdout.splitlines()]
+        else:
+            return self.stdout.splitlines(keepends=True)
 
     def __eq__(self, other):
         if isinstance(other, string_types):
@@ -148,7 +157,7 @@ class Shell(object):
         self._command = cmd
 
     def __call__(self, *args, **kwargs):
-        """
+        r"""
         Execute the command on the shell and capture the results.
 
         :raises: CommandError
@@ -156,8 +165,10 @@ class Shell(object):
                 
         ::
         
-            >>> str(clom.echo.shell('foo'))
-            'foo'
+            >>> clom.echo.shell('foo').stdout
+            'foo\n'
+            >>> print(clom.echo.shell('foo'))
+            foo
 
         """
 
@@ -175,9 +186,6 @@ class Shell(object):
             stderr = stderr.decode(self._command._encoding)
         status = p.returncode
 
-        stdout = stdout.strip() if stdout else ''
-        stderr = stderr.strip() if stderr else ''
-
         if status == 0:
             return CommandResult(status, stdout, stderr)
         else:
@@ -186,14 +194,17 @@ class Shell(object):
     def first(self, *args, **kwargs):
         """
         Executes the command and returns the first line.
+        Commands with no output return empty-string.
 
         Alias for `shell(...).first()`
 
         ::
         
-            >>> str(clom.echo.shell.first('foo\\nfoobar'))
+            >>> clom.echo.shell.first('foo\\nfoobar')
             'foo'
-                    
+
+            >>> clom.true.shell.first()
+            ''
         """
         return self(*args, **kwargs).first()
 
