@@ -85,6 +85,9 @@ class Operation(object):
         """
         self._pipe_to.append(to_cmd)
 
+    # | is shorthand for pipe_to
+    __or__ = pipe_to
+
     @_makes_clone
     def append_to_file(self, filename, fd=arg.STDOUT):
         """
