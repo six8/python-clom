@@ -26,6 +26,10 @@ def test_clom():
     assert 'grep 2> /dev/null' == clom.grep.hide_output(STDERR)
     assert 'env foo=true ls' == clom.ls.with_env(foo='true')
 
+    greeting = clom.sh(c='echo $GREETING', GREETING='Hello, world!')
+    assert "env GREETING='Hello, world!' sh -c 'echo $GREETING'" == greeting
+    assert greeting._env['GREETING'] == greeting.shell()
+
 def test_shell():
     assert 'foo' == clom.echo.shell('foo')
     assert 'foo' == clom.echo.shell.first('foo')

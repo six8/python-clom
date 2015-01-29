@@ -352,6 +352,14 @@ class Command(Operation):
         # Arguments to pass to the command line
         self._args = []
 
+    def __sort_kwargs(self, kwargs):
+        """Private helper, to separate options from environment vars."""
+        for name, val in kwargs.items():
+            if len(name) > 1 and name.isupper():
+                self._env[name] = val
+            else:
+                self._kwopts[name] = val
+
     @_makes_clone
     def with_opts(self, *args, **kwargs):
         """
@@ -359,6 +367,7 @@ class Command(Operation):
 
         :param kwargs: A dictionary of options to pass to the command.
                        Keys are generated as `--name value` or `-n value` depending on the length.
+                       Keys in ALL_CAPS are interpreted as environment variables.
         :param args: A list of options to pass to the command.
                      Args are only escaped, no other special processing is done.
         :returns: Command
@@ -366,12 +375,12 @@ class Command(Operation):
 
         ::
 
-            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1')
-            "curl --basic -f --header \'X-Test: 1\'"
+            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl --basic -f --header \'X-Test: 1\'"
 
         """
         self._listopts.extend(args)
-        self._kwopts.update(kwargs)
+        self.__sort_kwargs(kwargs)
         return self
 
     @_makes_clone
@@ -465,12 +474,15 @@ class Command(Operation):
 
     @_makes_clone
     def __call__(self, *args, **kwargs):
-        """
+        r"""
         Shortcut for `command.with_opts(**kwargs).with_args(*args)`
 
         :returns: str - Command suitable to pass to the command line
+
+            >>> clom.curl('example.com', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl -f --header 'X-Test: 1' example.com"
         """
-        self._kwopts.update(kwargs)
+        self.__sort_kwargs(kwargs)
         self._args.extend(args)
         return self
 
