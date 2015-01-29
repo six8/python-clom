@@ -443,7 +443,7 @@ class Command(Operation):
                     if len(name) == 1:
                         name = '-%s' % name
                     else:
-                        name = '--%s' % name
+                        name = '--%s' % name.replace('_', '-')
 
                 s.append(str(name))
 
