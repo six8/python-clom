@@ -1,16 +1,3 @@
-try:
-    # Try to use decorator module as it gives better introspection of
-    # decorated me
-    from decorator import decorator
-except ImportError:
-    # No decorator package available. Create a no-op "decorator".
-    def decorator(f):
-        def decorate(_func):
-            def inner(*args, **kwargs):
-                return f(_func, *args, **kwargs)
-            return inner
-        return decorate
-
 from clom import arg
 from clom.shell import Shell
 from clom._compat import string_types, integer_types, PY3
@@ -21,6 +8,17 @@ __all__ = [
     'AND',
     'OR',
 ]
+
+
+def decorator(decoration):
+    def new_decorator(wrapped):
+        from functools import wraps
+        @wraps(wrapped)
+        def wrapper(*args, **kwargs):
+            return decoration(wrapped, *args, **kwargs)
+        return wrapper
+    return new_decorator
+
 
 @decorator
 def _makes_clone(_func, *args, **kw):
@@ -369,7 +367,7 @@ class Command(Operation):
         ::
 
             >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1')
-            'curl --basic --header \'X-Test: 1\' -f'
+            "curl --basic -f --header \'X-Test: 1\'"
 
         """
         self._listopts.extend(args)
@@ -378,7 +376,7 @@ class Command(Operation):
 
     @_makes_clone
     def with_args(self, *args):
-        """
+        r"""
         Arguments to call the command with.
 
         :param args: A list of arguments to pass to the command.
@@ -389,7 +387,7 @@ class Command(Operation):
         ::
 
             >>> clom.echo("don't test me")
-            'echo \'don\'\\\'\'t test me\''
+            "echo 'don'\\''t test me'"
 
         """
         self._args.extend(args)
