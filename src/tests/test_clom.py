@@ -8,6 +8,8 @@ def test_clom():
     assert 'fab --list' == clom.fab.with_opts(list=True)
     assert 'fab --list' == clom.fab.with_opts('--list')
 
+    assert 'git --all-match --match-count 3' == clom.git.with_opts(all_match=True, match_count=3)
+
     assert 'fab -i keyfile' == clom.fab(i='keyfile')
     assert 'fab -i keyfile' == clom.fab.with_opts('-i', 'keyfile')
 
