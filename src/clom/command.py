@@ -83,6 +83,9 @@ class Operation(object):
         """
         self._pipe_to.append(to_cmd)
 
+    # | is shorthand for pipe_to
+    __or__ = pipe_to
+
     @_makes_clone
     def append_to_file(self, filename, fd=arg.STDOUT):
         """
@@ -291,8 +294,10 @@ class Operation(object):
     def __eq__(self, other):
         if isinstance(other, string_types):
             return other == str(self)
+        elif isinstance(other, Operation):
+            return vars(other) == vars(self)
         else:
-            return super(self.__class__, self).__eq__(other)
+            return NotImplemented
 
     @_makes_clone
     def with_env(self, **kwargs):
@@ -362,7 +367,7 @@ class Command(Operation):
 
     @_makes_clone
     def with_opts(self, *args, **kwargs):
-        """
+        r"""
         Options to call the command with.
 
         :param kwargs: A dictionary of options to pass to the command.
@@ -376,7 +381,7 @@ class Command(Operation):
         ::
 
             >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1', NO_PROXY='*')
-            "env NO_PROXY='*' curl --basic -f --header \'X-Test: 1\'"
+            "env NO_PROXY='*' curl --basic -f --header='X-Test: 1'"
 
         """
         self._listopts.extend(args)
@@ -446,21 +451,30 @@ class Command(Operation):
 
         for name, opt in sorted(self._kwopts.items()):
             if opt is not arg.NOTSET:
-                if not name.startswith('-'):
-                    if len(name) == 1:
-                        name = '-%s' % name
-                    else:
-                        name = '--%s' % name
+                if name.startswith('--'):
+                    short = False
+                elif name.startswith('-'):
+                    short = True
+                elif len(name) == 1:
+                    short = True
+                    name = '-%s' % name
+                else:
+                    short = False
+                    name = '--%s' % name.replace('_', '-')
 
-                s.append(str(name))
 
                 if opt is True:
-                    # Do nothing, assume they just wanted `--name`
-                    pass
+                    # They just wanted `--name`
+                    s.append(name)
+                    continue
                 elif opt is False:
                     raise ValueError('Keyword options such as %r can not have False values' % name)
-                else:
-                    s.append(e(opt))
+
+                pair = (name, e(opt))
+                if short:  # -x 1
+                    s.extend(pair)
+                else:  # --ex=1
+                    s.append('%s=%s' % pair)
 
         self._build_args(s)
 
@@ -480,7 +494,7 @@ class Command(Operation):
         :returns: str - Command suitable to pass to the command line
 
             >>> clom.curl('example.com', f=True, header='X-Test: 1', NO_PROXY='*')
-            "env NO_PROXY='*' curl -f --header 'X-Test: 1' example.com"
+            "env NO_PROXY='*' curl -f --header='X-Test: 1' example.com"
         """
         self.__sort_kwargs(kwargs)
         self._args.extend(args)

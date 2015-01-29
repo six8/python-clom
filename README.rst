@@ -32,7 +32,7 @@ Augment with arguments::
 	>>> clom.ls.with_opts('-a', '-t', l=True).with_args('~/')
 	"ls -a -t -l '~/'"
 	>>> clom.curl('http://dev.host', X='POST', data='message=hello')
-	'curl -X POST --data message=hello http://dev.host'
+	'curl -X POST --data=message=hello http://dev.host'
 
 
 Use sub commands::
@@ -88,7 +88,7 @@ Re-use commands::
 Background tasks::
 
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background()
-	"nohup VBoxHeadless --startvm 'Windows Base' &> /dev/null &"
+	"nohup VBoxHeadless --startvm='Windows Base' &> /dev/null &"
 	>>> clom.VBoxHeadless.with_opts(startvm="Windows Base").background().shell()
 	<CommandResult return_code=0, stdout=0 bytes, stderr=0 bytes>
 
@@ -105,7 +105,7 @@ Can even create fab commands::
 	>>> clom.fab.test('doctest', 'unit').deploy('dev')
 	'fab test:doctest,unit deploy:dev'
 	>>> clom.fab.with_opts('-a', hosts='dev.host').deploy.with_args('dev','test')
-	'fab -a --hosts dev.host deploy:dev,test'
+	'fab -a --hosts=dev.host deploy:dev,test'
 
 
 See more examples and the API in the `Clom Documentation <http://clom.rtfd.org>`_
