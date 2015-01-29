@@ -85,6 +85,9 @@ class Operation(object):
         """
         self._pipe_to.append(to_cmd)
 
+    # | is shorthand for pipe_to
+    __or__ = pipe_to
+
     @_makes_clone
     def append_to_file(self, filename, fd=arg.STDOUT):
         """
@@ -293,8 +296,10 @@ class Operation(object):
     def __eq__(self, other):
         if isinstance(other, string_types):
             return other == str(self)
+        elif isinstance(other, Operation):
+            return vars(other) == vars(self)
         else:
-            return super(self.__class__, self).__eq__(other)
+            return NotImplemented
 
     @_makes_clone
     def with_env(self, **kwargs):

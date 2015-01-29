@@ -16,7 +16,13 @@ def test_clom():
 
 
     assert '( grep \'*.pyc\' test.txt && wc && cat )' == AND(clom.grep('*.pyc', 'test.txt'), clom.wc, clom.cat)
-    assert '( grep \'*.pyc\' test.txt || wc || cat ) | wc' == OR(clom.grep('*.pyc', 'test.txt'), clom.wc, clom.cat).pipe_to(clom.wc)
+
+    bigcmd = OR(clom.grep('*.pyc', 'test.txt'), clom.wc, clom.cat).pipe_to(clom.wc)
+    assert (
+            '( grep \'*.pyc\' test.txt || wc || cat ) | wc' ==
+            bigcmd ==
+            OR(clom.grep('*.pyc', 'test.txt'), clom.wc, clom.cat) | clom.wc
+    )
 
     assert 'grep >> test.txt' == clom.grep.append_to_file('test.txt')
     assert 'grep 2>> test.txt' == clom.grep.append_to_file('test.txt', STDERR)
@@ -34,6 +40,9 @@ def test_shell():
     assert 0 == r.return_code
     assert r.return_code == r.code    
     assert str(r) == ''
+    assert r == ''
+    assert r == r
+    assert r == clom.echo.shell('')
     assert r.stdout == '\n'
 
     for i, line in enumerate(clom.echo.shell('a\nb\nc')):
@@ -59,8 +68,14 @@ def test_piping():
     ls_pipe_echo_expected = 'ls -lah | echo monkey gorilla' 
     assert ls_pipe_echo_expected == str(ls_pipe_echo)
 
+    ls_pipe_echo = cmd_ls | cmd_echo
+    assert ls_pipe_echo_expected == str(ls_pipe_echo)
+
     ls_pipe_echo_pipe_grep = ls_pipe_echo.pipe_to(cmd_grep)
     ls_pipe_echo_pipe_grep_expected = ls_pipe_echo_expected + ' | grep monkey'
+    assert ls_pipe_echo_pipe_grep_expected == str(ls_pipe_echo_pipe_grep)
+
+    ls_pipe_echo_pipe_grep = ls_pipe_echo | cmd_grep
     assert ls_pipe_echo_pipe_grep_expected == str(ls_pipe_echo_pipe_grep)
 
 def test_new_commands():
