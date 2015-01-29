@@ -439,21 +439,30 @@ class Command(Operation):
 
         for name, opt in sorted(self._kwopts.items()):
             if opt is not arg.NOTSET:
-                if not name.startswith('-'):
-                    if len(name) == 1:
-                        name = '-%s' % name
-                    else:
-                        name = '--%s' % name
+                if name.startswith('--'):
+                    short = False
+                elif name.startswith('-'):
+                    short = True
+                elif len(name) == 1:
+                    short = True
+                    name = '-%s' % name
+                else:
+                    short = False
+                    name = '--%s' % name
 
-                s.append(str(name))
 
                 if opt is True:
-                    # Do nothing, assume they just wanted `--name`
-                    pass
+                    # They just wanted `--name`
+                    s.append(name)
+                    continue
                 elif opt is False:
                     raise ValueError('Keyword options such as %r can not have False values' % name)
-                else:
-                    s.append(e(opt))
+
+                pair = (name, e(opt))
+                if short:  # -x 1
+                    s.extend(pair)
+                else:  # --ex=1
+                    s.append('%s=%s' % pair)
 
         self._build_args(s)
 
