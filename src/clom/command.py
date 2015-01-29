@@ -1,16 +1,3 @@
-try:
-    # Try to use decorator module as it gives better introspection of
-    # decorated me
-    from decorator import decorator
-except ImportError:
-    # No decorator package available. Create a no-op "decorator".
-    def decorator(f):
-        def decorate(_func):
-            def inner(*args, **kwargs):
-                return f(_func, *args, **kwargs)
-            return inner
-        return decorate
-
 from clom import arg
 from clom.shell import Shell
 from clom._compat import string_types, integer_types, PY3
@@ -21,6 +8,17 @@ __all__ = [
     'AND',
     'OR',
 ]
+
+
+def decorator(decoration):
+    def new_decorator(wrapped):
+        from functools import wraps
+        @wraps(wrapped)
+        def wrapper(*args, **kwargs):
+            return decoration(wrapped, *args, **kwargs)
+        return wrapper
+    return new_decorator
+
 
 @decorator
 def _makes_clone(_func, *args, **kw):
@@ -354,6 +352,14 @@ class Command(Operation):
         # Arguments to pass to the command line
         self._args = []
 
+    def __sort_kwargs(self, kwargs):
+        """Private helper, to separate options from environment vars."""
+        for name, val in kwargs.items():
+            if len(name) > 1 and name.isupper():
+                self._env[name] = val
+            else:
+                self._kwopts[name] = val
+
     @_makes_clone
     def with_opts(self, *args, **kwargs):
         """
@@ -361,6 +367,7 @@ class Command(Operation):
 
         :param kwargs: A dictionary of options to pass to the command.
                        Keys are generated as `--name value` or `-n value` depending on the length.
+                       Keys in ALL_CAPS are interpreted as environment variables.
         :param args: A list of options to pass to the command.
                      Args are only escaped, no other special processing is done.
         :returns: Command
@@ -368,17 +375,17 @@ class Command(Operation):
 
         ::
 
-            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1')
-            'curl --basic --header \'X-Test: 1\' -f'
+            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl --basic -f --header \'X-Test: 1\'"
 
         """
         self._listopts.extend(args)
-        self._kwopts.update(kwargs)
+        self.__sort_kwargs(kwargs)
         return self
 
     @_makes_clone
     def with_args(self, *args):
-        """
+        r"""
         Arguments to call the command with.
 
         :param args: A list of arguments to pass to the command.
@@ -389,7 +396,7 @@ class Command(Operation):
         ::
 
             >>> clom.echo("don't test me")
-            'echo \'don\'\\\'\'t test me\''
+            "echo 'don'\\''t test me'"
 
         """
         self._args.extend(args)
@@ -467,12 +474,15 @@ class Command(Operation):
 
     @_makes_clone
     def __call__(self, *args, **kwargs):
-        """
+        r"""
         Shortcut for `command.with_opts(**kwargs).with_args(*args)`
 
         :returns: str - Command suitable to pass to the command line
+
+            >>> clom.curl('example.com', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl -f --header 'X-Test: 1' example.com"
         """
-        self._kwopts.update(kwargs)
+        self.__sort_kwargs(kwargs)
         self._args.extend(args)
         return self
 

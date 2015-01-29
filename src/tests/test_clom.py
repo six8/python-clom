@@ -26,6 +26,10 @@ def test_clom():
     assert 'grep 2> /dev/null' == clom.grep.hide_output(STDERR)
     assert 'env foo=true ls' == clom.ls.with_env(foo='true')
 
+    greeting = clom.sh(c='echo $GREETING', GREETING='Hello, world!')
+    assert "env GREETING='Hello, world!' sh -c 'echo $GREETING'" == greeting
+    assert greeting._env['GREETING'] == greeting.shell()
+
 def test_shell():
     assert 'foo' == clom.echo.shell('foo')
     assert 'foo' == clom.echo.shell.first('foo')
@@ -85,3 +89,20 @@ def test_sub_command():
     assert str(echo_twice) == r"""echo "$(echo ' $`'\''" \ ')" ' $`'\''" \ '"""
 
     assert str(echo_twice.shell()) == shell_stuff + ' ' + shell_stuff
+
+
+def test_metadecorator():
+    from clom.command import decorator
+    @decorator
+    def mydecorator(func, *args, **kwargs):
+        return args, kwargs
+
+    def myfunc():
+        "I have a docstring!"
+        raise AssertionError("This shouldn't be called.")
+
+    myfunc2 = mydecorator(myfunc)
+
+    assert myfunc2 is not myfunc
+    assert myfunc2.__doc__ == myfunc.__doc__
+    assert myfunc2('foo', bar=3) == (('foo',), {'bar':3})

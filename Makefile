@@ -1,2 +1,4 @@
+.PHONY: all test
+all: test
 test:
-	PYTHONPATH=src py.test
+	./src/tests/runtests.py
