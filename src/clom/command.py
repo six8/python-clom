@@ -358,7 +358,7 @@ class Command(Operation):
         # Arguments to pass to the command line
         self._args = []
 
-    def __sort_kwargs(self, kwargs):
+    def _parse_kwargs(self, kwargs):
         """Private helper, to separate options from environment vars."""
         for name, val in kwargs.items():
             if len(name) > 1 and name.isupper():
@@ -386,7 +386,7 @@ class Command(Operation):
 
         """
         self._listopts.extend(args)
-        self.__sort_kwargs(kwargs)
+        self._parse_kwargs(kwargs)
         return self
 
     @_makes_clone
@@ -497,7 +497,7 @@ class Command(Operation):
             >>> clom.curl('example.com', f=True, header='X-Test: 1', NO_PROXY='*')
             "env NO_PROXY='*' curl -f --header='X-Test: 1' example.com"
         """
-        self.__sort_kwargs(kwargs)
+        self._parse_kwargs(kwargs)
         self._args.extend(args)
         return self
 
