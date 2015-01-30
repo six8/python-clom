@@ -8,18 +8,18 @@ def monkeypatch_DoctestModule():
     """
     Ugly monkeypatch to make sure clom is available to all doctests when ran with py.test
     """
-    def runtest(self):
-        module = self.fspath.pyimport()
-        doctest.testmod(
-            module, raise_on_error=True, verbose=0,
-            optionflags=doctest.ELLIPSIS, extraglobs={
-                'clom': clom,
-                'STDIN': STDIN,
-                'STDOUT': STDOUT,
-                'STDERR': STDERR,
-                'NOTSET': NOTSET,
-            })
+    old_runtest = _pytest.doctest.DoctestItem.runtest
 
-    _pytest.doctest.DoctestItem.runtest = runtest
+    def new_runtest(self):
+        self.dtest.globs.update({
+            'clom': clom,
+            'STDIN': STDIN,
+            'STDOUT': STDOUT,
+            'STDERR': STDERR,
+            'NOTSET': NOTSET,
+        })
+        old_runtest(self)
+
+    _pytest.doctest.DoctestItem.runtest = new_runtest
 
 monkeypatch_DoctestModule()
