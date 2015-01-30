@@ -1,15 +1,4 @@
-try:
-    # Try to use decorator module as it gives better introspection of
-    # decorated me
-    from decorator import decorator
-except ImportError:
-    # No decorator package available. Create a no-op "decorator".
-    def decorator(f):
-        def decorate(_func):
-            def inner(*args, **kwargs):
-                return f(_func, *args, **kwargs)
-            return inner
-        return decorate
+from functools import wraps
 
 from clom import arg
 from clom.shell import Shell
@@ -21,6 +10,16 @@ __all__ = [
     'AND',
     'OR',
 ]
+
+
+def decorator(decoration):
+    def new_decorator(wrapped):
+        @wraps(wrapped)
+        def wrapper(*args, **kwargs):
+            return decoration(wrapped, *args, **kwargs)
+        return wrapper
+    return new_decorator
+
 
 @decorator
 def _makes_clone(_func, *args, **kw):
@@ -84,6 +83,9 @@ class Operation(object):
 
         """
         self._pipe_to.append(to_cmd)
+
+    # | is shorthand for pipe_to
+    __or__ = pipe_to
 
     @_makes_clone
     def append_to_file(self, filename, fd=arg.STDOUT):
@@ -293,8 +295,10 @@ class Operation(object):
     def __eq__(self, other):
         if isinstance(other, string_types):
             return other == str(self)
+        elif isinstance(other, Operation):
+            return vars(other) == vars(self)
         else:
-            return super(self.__class__, self).__eq__(other)
+            return NotImplemented
 
     @_makes_clone
     def with_env(self, **kwargs):
@@ -354,13 +358,22 @@ class Command(Operation):
         # Arguments to pass to the command line
         self._args = []
 
+    def _parse_kwargs(self, kwargs):
+        """Private helper, to separate options from environment vars."""
+        for name, val in kwargs.items():
+            if len(name) > 1 and name.isupper():
+                self._env[name] = val
+            else:
+                self._kwopts[name] = val
+
     @_makes_clone
     def with_opts(self, *args, **kwargs):
-        """
+        r"""
         Options to call the command with.
 
         :param kwargs: A dictionary of options to pass to the command.
-                       Keys are generated as `--name value` or `-n value` depending on the length.
+                       Keys are generated as `--name=value` or `-n value` depending on the length.
+                       Keys in ALL_CAPS are interpreted as environment variables.
         :param args: A list of options to pass to the command.
                      Args are only escaped, no other special processing is done.
         :returns: Command
@@ -368,17 +381,17 @@ class Command(Operation):
 
         ::
 
-            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1')
-            'curl --basic --header \'X-Test: 1\' -f'
+            >>> clom.curl.with_opts('--basic', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl --basic -f --header='X-Test: 1'"
 
         """
         self._listopts.extend(args)
-        self._kwopts.update(kwargs)
+        self._parse_kwargs(kwargs)
         return self
 
     @_makes_clone
     def with_args(self, *args):
-        """
+        r"""
         Arguments to call the command with.
 
         :param args: A list of arguments to pass to the command.
@@ -389,7 +402,7 @@ class Command(Operation):
         ::
 
             >>> clom.echo("don't test me")
-            'echo \'don\'\\\'\'t test me\''
+            "echo 'don'\\''t test me'"
 
         """
         self._args.extend(args)
@@ -439,21 +452,30 @@ class Command(Operation):
 
         for name, opt in sorted(self._kwopts.items()):
             if opt is not arg.NOTSET:
-                if not name.startswith('-'):
-                    if len(name) == 1:
-                        name = '-%s' % name
-                    else:
-                        name = '--%s' % name
+                if name.startswith('--'):
+                    short = False
+                elif name.startswith('-'):
+                    short = True
+                elif len(name) == 1:
+                    short = True
+                    name = '-%s' % name
+                else:
+                    short = False
+                    name = '--%s' % name.replace('_', '-')
 
-                s.append(str(name))
 
                 if opt is True:
-                    # Do nothing, assume they just wanted `--name`
-                    pass
+                    # They just wanted `--name`
+                    s.append(name)
+                    continue
                 elif opt is False:
                     raise ValueError('Keyword options such as %r can not have False values' % name)
-                else:
-                    s.append(e(opt))
+
+                pair = (name, e(opt))
+                if short:  # -x 1
+                    s.extend(pair)
+                else:  # --ex=1
+                    s.append('%s=%s' % pair)
 
         self._build_args(s)
 
@@ -467,12 +489,15 @@ class Command(Operation):
 
     @_makes_clone
     def __call__(self, *args, **kwargs):
-        """
+        r"""
         Shortcut for `command.with_opts(**kwargs).with_args(*args)`
 
         :returns: str - Command suitable to pass to the command line
+
+            >>> clom.curl('example.com', f=True, header='X-Test: 1', NO_PROXY='*')
+            "env NO_PROXY='*' curl -f --header='X-Test: 1' example.com"
         """
-        self._kwopts.update(kwargs)
+        self._parse_kwargs(kwargs)
         self._args.extend(args)
         return self
 

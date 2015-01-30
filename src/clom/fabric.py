@@ -57,7 +57,7 @@ class FabCommand(Command):
     ::
 
         >>> clom.fab.with_opts('-a', hosts='dev.host').deploy.with_args('dev','test')
-        'fab -a --hosts dev.host deploy:dev,test'
+        'fab -a --hosts=dev.host deploy:dev,test'
 
     """
     def __getattr__(self, name):
