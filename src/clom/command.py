@@ -372,7 +372,7 @@ class Command(Operation):
         Options to call the command with.
 
         :param kwargs: A dictionary of options to pass to the command.
-                       Keys are generated as `--name value` or `-n value` depending on the length.
+                       Keys are generated as `--name=value` or `-n value` depending on the length.
                        Keys in ALL_CAPS are interpreted as environment variables.
         :param args: A list of options to pass to the command.
                      Args are only escaped, no other special processing is done.
