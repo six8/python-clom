@@ -115,8 +115,8 @@ Running Tests
 
 Test are run using pytest::
 
-	pip install pytest fabfile
+	pip install pytest
 
 ::
 
-	python tests/runtests.py -v
+	./runtests -v
