@@ -1,3 +1,5 @@
+from functools import wraps
+
 from clom import arg
 from clom.shell import Shell
 from clom._compat import string_types, integer_types, PY3
@@ -12,7 +14,6 @@ __all__ = [
 
 def decorator(decoration):
     def new_decorator(wrapped):
-        from functools import wraps
         @wraps(wrapped)
         def wrapper(*args, **kwargs):
             return decoration(wrapped, *args, **kwargs)
