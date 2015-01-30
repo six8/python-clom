@@ -208,7 +208,7 @@ class Operation(object):
 
     def _escape_arg(self, val):
         if isinstance(val, Command):
-            return '`%s`' % arg
+            return '"$(%s)"' % val
         elif isinstance(val, arg.BaseArg):
             return str(val)
         else:
@@ -261,7 +261,7 @@ class Operation(object):
 
 
     def __repr__(self):
-        return "'%s'" % self
+        return repr(str(self))
 
 
     def _clone(self):
