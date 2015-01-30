@@ -9,4 +9,4 @@ matrix:
 install:
   - pip install -r requirements.d/test.txt
 script:
-  - ./src/tests/runtests.py
+  - ./runtests

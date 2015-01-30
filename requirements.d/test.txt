@@ -1,3 +1,2 @@
 # the set of requirements necessary to run tests
 pytest>=2.6.3,<2.7
-fabric
